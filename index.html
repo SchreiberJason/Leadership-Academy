@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leadership Academy Ranking</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0f4f8; /* Light gray background */
+            color: #1e293b; /* Dark text for high contrast */
+        }
+        
+        /* New Color Palette */
+        .bg-light-bg { background-color: #f0f4f8; }
+        .bg-card-bg { background-color: #ffffff; }
+        .text-primary-blue { color: #3b82f6; }
+        .bg-primary-blue { background-color: #3b82f6; }
+        .text-accent-teal { color: #2dd4bf; }
+        .bg-accent-teal { background-color: #2dd4bf; }
+        .border-accent { border-color: #d1d5db; }
+
+        /* Modern Table Styling */
+        .table-header { background-color: #e2e8f0; }
+        .table-row-even { background-color: #f8fafc; }
+        .table-row-odd { background-color: #ffffff; }
+
+        /* Horizontal Timeline Styling */
+        .timeline-container {
+            position: relative;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .timeline-milestone-card {
+            display: inline-block;
+            width: 280px;
+            margin-right: 20px;
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px -2px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .timeline-milestone-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px -4px rgba(0,0,0,0.15);
+        }
+        .timeline-milestone-card:last-child {
+            margin-right: 0;
+        }
+        
+        /* Progress Bar Styling */
+        .progress-bar-container {
+            width: 100%;
+            background-color: #e2e8f0;
+            border-radius: 9999px;
+            overflow: hidden;
+            height: 1.25rem;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background-color: #3b82f6;
+            border-radius: 9999px;
+            transition: width 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-light-bg text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Header Section -->
+    <header class="bg-primary-blue text-white py-16 md:py-24 text-center shadow-lg">
+        <div class="container mx-auto px-4">
+            <h1 class="text-4xl md:text-6xl font-extrabold leading-tight">
+                Leadership Academy 🚀
+            </h1>
+            <p class="text-xl md:text-2xl font-light mt-2 opacity-90">
+                Die Zukunft der Führung
+            </p>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="w-full p-4 md:p-8 flex-grow">
+
+        <!-- Timetable Section -->
+        <section class="mt-8 mb-12">
+            <h2 class="text-3xl font-bold mb-8 text-center">Dein Weg zum Leader</h2>
+            <div class="bg-card-bg rounded-2xl p-6 md:p-10 shadow-xl overflow-hidden">
+                <div id="timeline-milestones" class="timeline-container relative">
+                    <!-- Milestones will be dynamically added here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Motivational Quote Section -->
+        <section class="my-16 container mx-auto px-4 max-w-7xl">
+            <div class="bg-card-bg rounded-2xl p-8 shadow-xl border-l-4 border-primary-blue text-center">
+                <blockquote class="text-xl md:text-2xl font-light italic text-gray-600">
+                    "Leadership is not about being in charge. It is about taking care of those in your charge."
+                </blockquote>
+                <cite class="block mt-4 text-right font-semibold text-primary-blue">- Simon Sinek</cite>
+            </div>
+        </section>
+
+        <!-- Main Ranking Section -->
+        <section class="my-16 container mx-auto px-4 max-w-7xl">
+            <h2 class="text-3xl font-bold mb-6 text-left">Ranking 🏆</h2>
+            <div class="overflow-x-auto bg-card-bg rounded-2xl shadow-xl">
+                <table class="min-w-full text-left">
+                    <thead class="table-header">
+                        <tr>
+                            <th scope="col" class="py-4 px-6 text-base font-bold rounded-tl-xl">Platz</th>
+                            <th scope="col" class="py-4 px-6 text-base font-bold">Name</th>
+                            <th scope="col" class="py-4 px-6 text-base font-bold text-center">ETs Gesamt</th>
+                            <th scope="col" class="py-4 px-6 text-base font-bold text-center">Ziel</th>
+                            <th scope="col" class="py-4 px-6 text-base font-bold text-center">Gesamtziel</th>
+                            <th scope="col" class="py-4 px-6 text-base font-bold rounded-tr-xl">Challenge Fortschritt</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ranking-body">
+                        <!-- Ranking data will be dynamically added here -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination Controls -->
+            <div id="pagination-controls" class="flex justify-center items-center gap-4 mt-8">
+                <button id="prev-page" class="px-4 py-2 bg-primary-blue text-white rounded-full hover:bg-blue-600 transition-colors duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                    Zurück
+                </button>
+                <span id="page-info" class="text-lg font-semibold text-gray-700"></span>
+                <button id="next-page" class="px-4 py-2 bg-primary-blue text-white rounded-full hover:bg-blue-600 transition-colors duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                    Weiter
+                </button>
+            </div>
+        </section>
+        
+        <!-- Recruiter Ranking Section -->
+        <section class="my-16 container mx-auto px-4 max-w-7xl">
+            <h2 class="text-3xl font-bold mb-6 text-left">Beste Recruiter ⭐</h2>
+            <div id="recruiter-ranking-container" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Top 3 Recruiter cards will be dynamically added here -->
+            </div>
+        </section>
+
+        <!-- Leadership Academy Graduates Section -->
+        <section class="my-16 container mx-auto px-4 max-w-7xl">
+            <h2 class="text-3xl font-bold mb-6 text-left">Unsere Absolventen 🎓</h2>
+            <div id="graduates-list" class="flex flex-wrap gap-3">
+                <!-- Graduate badges will be dynamically added here -->
+            </div>
+        </section>
+
+    </main>
+    
+    <!-- Footer -->
+    <footer class="bg-white text-gray-500 text-center py-6 mt-12 shadow-inner">
+        <p>&copy; 2025 Leadership Academy. Powering the next generation of leaders.</p>
+    </footer>
+
+    <script>
+        // Start date of the program
+        const startDate = new Date('2025-08-23T00:00:00');
+        // Corrected total weeks from 8 to 7
+        const totalWeeks = 7;
+        
+        // Global variables for pagination
+        let currentPage = 1;
+        const rowsPerPage = 10;
+        let sortedData = []; // Store the sorted data globally to use with pagination
+
+        // Google Sheet URL (needs to be handled by a backend proxy in a real-world scenario)
+        const googleSheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQMuGKX0YGZNK5oVt7nJBtyGjCXXC288WC6uIRwZGb7WOdcWqVdo-WzwJai5rJYRx-11u19C4fF-j0u/pub?gid=923736018&single=true&output=csv';
+
+        /**
+         * Parses CSV text and extracts all required columns by searching for their headers.
+         * It filters out non-personal names and limits the data to the first 44 rows.
+         * @param {string} text The CSV content as a string.
+         * @returns {Array<Object>} An array of objects with the processed data.
+         */
+        function parseCSV(text) {
+            const rows = text.trim().split('\n').map(row => row.split(','));
+            
+            let nameIndex = -1;
+            let etsGesamtIndex = -1;
+            let meinZielIndex = -1;
+            let meinGesamtzielIndex = -1;
+            let challengeFortschrittIndex = -1;
+            
+            // Search for the headers in all rows
+            for (let i = 0; i < rows.length; i++) {
+                const headerRow = rows[i].map(h => h.trim());
+                if (nameIndex === -1 && headerRow.includes('Name')) {
+                    nameIndex = headerRow.indexOf('Name');
+                }
+                if (etsGesamtIndex === -1 && headerRow.includes('ETs Gesamt')) {
+                    etsGesamtIndex = headerRow.indexOf('ETs Gesamt');
+                }
+                if (meinZielIndex === -1 && headerRow.includes('MEIN ZIEL!')) {
+                    meinZielIndex = headerRow.indexOf('MEIN ZIEL!');
+                }
+                if (meinGesamtzielIndex === -1 && headerRow.includes('Mein Gesamtziel')) {
+                    meinGesamtzielIndex = headerRow.indexOf('Mein Gesamtziel');
+                }
+                if (challengeFortschrittIndex === -1 && headerRow.includes('Challenge Fortschritt')) {
+                    challengeFortschrittIndex = headerRow.indexOf('Challenge Fortschritt');
+                }
+                // Stop searching once all headers are found
+                if (nameIndex !== -1 && etsGesamtIndex !== -1 && meinZielIndex !== -1 && meinGesamtzielIndex !== -1 && challengeFortschrittIndex !== -1) {
+                    break;
+                }
+            }
+
+            // Log errors for missing columns
+            if (nameIndex === -1) console.error("The required 'Name' column was not found.");
+            if (etsGesamtIndex === -1) console.error("The required 'ETs Gesamt' column was not found.");
+            if (meinZielIndex === -1) console.error("The required 'MEIN ZIEL!' column was not found.");
+            if (meinGesamtzielIndex === -1) console.error("The required 'Mein Gesamtziel' column was not found.");
+            if (challengeFortschrittIndex === -1) console.error("The required 'Challenge Fortschritt' column was not found.");
+            
+            const processedData = [];
+            
+            // Iterate through the data rows and extract the required data, stopping at row 44
+            for (let i = 0; i < Math.min(rows.length, 44); i++) {
+                const row = rows[i];
+                const name = row[nameIndex] ? row[nameIndex].trim() : '';
+                
+                // Get ETs value
+                const etsGesamt = (etsGesamtIndex !== -1 && row[etsGesamtIndex]) ? parseInt(row[etsGesamtIndex].trim(), 10) : 0;
+                
+                // Get 'Mein Ziel!' value
+                const meinZiel = (meinZielIndex !== -1 && row[meinZielIndex]) ? parseInt(row[meinZielIndex].trim(), 10) : 0;
+                
+                // Get 'Mein Gesamtziel' value
+                const meinGesamtziel = (meinGesamtzielIndex !== -1 && row[meinGesamtzielIndex]) ? parseInt(row[meinGesamtzielIndex].trim(), 10) : 0;
+
+                // Get 'Challenge Fortschritt' value and parse it
+                let challengeFortschritt = (challengeFortschrittIndex !== -1 && row[challengeFortschrittIndex]) ? row[challengeFortschrittIndex].trim() : '0 von 0';
+                let progressPercentage = 0;
+                const progressMatch = challengeFortschritt.match(/(\d+)\s+von\s+(\d+)/);
+                if (progressMatch) {
+                    const numerator = parseInt(progressMatch[1], 10);
+                    const denominator = parseInt(progressMatch[2], 10);
+                    if (denominator > 0) {
+                        progressPercentage = (numerator / denominator) * 100;
+                    }
+                } else if (challengeFortschritt.includes('von 0 möglichen')) {
+                    // Handle "0 von 0 möglichen" case explicitly
+                    challengeFortschritt = '0 von 0';
+                    progressPercentage = 0;
+                }
+
+
+                // Filter out names that are not alphanumeric or are single characters,
+                // and explicitly exclude 'RDK' and 'BL'. This also handles the 'Name' header row
+                // because 'Name' has a length > 1, but is not a personal name.
+                if (name && name.length > 1 && /[a-zA-Z]/.test(name) && name.toUpperCase() !== 'RDK' && !name.includes('BL') && name.toLowerCase() !== 'name') {
+                    processedData.push({
+                        name: name,
+                        etsGesamt: isNaN(etsGesamt) ? 0 : etsGesamt, // Ensure it's a number
+                        meinZiel: isNaN(meinZiel) ? 0 : meinZiel, // Ensure it's a number
+                        meinGesamtziel: isNaN(meinGesamtziel) ? 0 : meinGesamtziel, // Ensure it's a number
+                        challengeFortschritt: challengeFortschritt,
+                        progressPercentage: progressPercentage
+                    });
+                }
+            }
+            return processedData;
+        }
+
+        /**
+         * Renders the main ranking table with pagination, now including Challenge Fortschritt.
+         * @param {Array<Object>} data - The processed data.
+         * @param {number} page - The current page number to display.
+         * @param {number} rowsPerPage - The number of rows to display per page.
+         */
+        function renderRankings(data, page, rowsPerPage) {
+            const rankingBody = document.getElementById('ranking-body');
+            rankingBody.innerHTML = ''; // Clear previous content
+
+            if (data.length === 0) {
+                rankingBody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-gray-500">Keine Ranking-Daten vorhanden.</td></tr>';
+                return;
+            }
+
+            // Calculate start and end index for the current page
+            const start = (page - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            const paginatedData = data.slice(start, end);
+
+            paginatedData.forEach((item, index) => {
+                const rank = start + index + 1;
+                
+                const rowClass = index % 2 === 0 ? 'table-row-even' : 'table-row-odd';
+                const row = `
+                    <tr class="${rowClass} border-b border-gray-200 last:border-b-0">
+                        <td class="py-4 px-6 font-bold text-gray-800">${rank}</td>
+                        <td class="py-4 px-6 font-medium text-gray-700">${item.name}</td>
+                        <td class="py-4 px-6 font-medium text-gray-700 text-center">${item.etsGesamt}</td>
+                        <td class="py-4 px-6 font-medium text-gray-700 text-center">${item.meinZiel}</td>
+                        <td class="py-4 px-6 font-medium text-gray-700 text-center">${item.meinGesamtziel}</td>
+                        <td class="py-4 px-6">
+                            <div class="progress-bar-container">
+                                <div class="progress-bar-fill" style="width: ${item.progressPercentage}%;"></div>
+                            </div>
+                            <div class="text-xs text-gray-500 mt-1">${item.challengeFortschritt}</div>
+                        </td>
+                    </tr>
+                `;
+                rankingBody.innerHTML += row;
+            });
+        }
+
+        /**
+         * Sets up the pagination controls.
+         * @param {Array<Object>} data - The full dataset.
+         */
+        function setupPagination(data) {
+            const pageInfo = document.getElementById('page-info');
+            const prevBtn = document.getElementById('prev-page');
+            const nextBtn = document.getElementById('next-page');
+
+            const pageCount = Math.ceil(data.length / rowsPerPage);
+
+            prevBtn.disabled = currentPage === 1;
+            nextBtn.disabled = currentPage === pageCount || pageCount === 0;
+            pageInfo.textContent = `Seite ${currentPage} von ${pageCount}`;
+
+            prevBtn.onclick = () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderRankings(data, currentPage, rowsPerPage);
+                    setupPagination(data); // Update button states
+                }
+            };
+
+            nextBtn.onclick = () => {
+                if (currentPage < pageCount) {
+                    currentPage++;
+                    renderRankings(data, currentPage, rowsPerPage);
+                    setupPagination(data); // Update button states
+                }
+            };
+        }
+
+        /**
+         * Renders the top 3 recruiters in a card-based layout.
+         * @param {Array<Object>} data - The processed data sorted by recruiting efforts.
+         */
+        function renderRecruiterRanking(data) {
+            const container = document.getElementById('recruiter-ranking-container');
+            container.innerHTML = '';
+
+            const topRecruiters = data.slice(0, 3);
+            if (topRecruiters.length === 0) {
+                 container.innerHTML = '<div class="col-span-3 text-center text-gray-500">Keine Recruiter-Daten verfügbar.</div>';
+                 return;
+            }
+
+            topRecruiters.forEach((recruiter, index) => {
+                const medalEmoji = index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉';
+                const card = `
+                    <div class="bg-card-bg rounded-xl p-6 text-center shadow-lg transform transition-transform duration-300 hover:scale-105 border-t-4 border-accent-teal">
+                        <div class="text-4xl mb-2">${medalEmoji}</div>
+                        <h4 class="text-xl font-bold text-slate-800">${recruiter.name}</h4>
+                    </div>
+                `;
+                container.innerHTML += card;
+            });
+        }
+
+        /**
+         * Renders the graduates as badges. This is a placeholder function.
+         */
+        function renderGraduates() {
+            const graduatesList = document.getElementById('graduates-list');
+            graduatesList.innerHTML = '';
+            
+            const graduates = ['Jana Müller', 'Marco Fischer', 'Lena Schmidt']; // Beispiel-Absolventen
+
+            graduates.forEach(name => {
+                const badge = `
+                    <span class="bg-gray-100 text-gray-800 text-sm font-semibold px-4 py-2 rounded-full border border-gray-300">
+                        ${name}
+                    </span>
+                `;
+                graduatesList.innerHTML += badge;
+            });
+        }
+
+        /**
+         * Function to update the timeline.
+         */
+        function updateTimeline() {
+            const now = new Date();
+            const timelineContainer = document.getElementById('timeline-milestones');
+            timelineContainer.innerHTML = '';
+            
+            const milestones = [];
+            // Changed the loop to iterate based on the new totalWeeks variable
+            for (let i = 0; i <= totalWeeks; i++) {
+                const milestoneDate = new Date(startDate.getTime() + (i * 7 * 24 * 60 * 60 * 1000));
+                const isCurrent = now >= milestoneDate && (i === totalWeeks || now < new Date(startDate.getTime() + ((i + 1) * 7 * 24 * 60 * 60 * 1000)));
+                const milestonePassed = now >= milestoneDate;
+
+                milestones.push({
+                    date: milestoneDate,
+                    week: i,
+                    isCurrent: isCurrent,
+                    milestonePassed: milestonePassed
+                });
+            }
+
+            milestones.forEach(m => {
+                const statusEmoji = m.milestonePassed ? '✅' : '⏳';
+                const statusText = m.isCurrent ? 'Aktuell' : (m.milestonePassed ? 'Abgeschlossen' : 'Bevorstehend');
+                const card = `
+                    <div class="timeline-milestone-card bg-card-bg">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-3xl">${statusEmoji}</span>
+                            <span class="text-xs font-semibold px-2 py-1 rounded-full ${m.isCurrent ? 'bg-accent-teal/20 text-accent-teal' : 'bg-gray-200 text-gray-500'}">
+                                ${statusText}
+                            </span>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-800 mb-1">${m.week === 0 ? 'Start' : `Woche ${m.week}`}</h3>
+                        <p class="text-sm text-gray-500">${m.date.toLocaleDateString('de-DE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                    </div>
+                `;
+                timelineContainer.innerHTML += card;
+            });
+        }
+
+
+        // Function to fetch and process data
+        async function fetchDataAndRender() {
+            try {
+                // Note: In a real-world application, this fetch call must point to a backend proxy
+                const response = await fetch(googleSheetUrl);
+                const csvText = await response.text();
+
+                // Log raw and parsed data for debugging purposes
+                console.log("Raw CSV Text:", csvText);
+                sortedData = parseCSV(csvText); // Store data in the global variable
+                console.log("Parsed Data:", sortedData);
+                
+                // Sort the data by 'etsGesamt' in descending order
+                sortedData.sort((a, b) => b.etsGesamt - a.etsGesamt);
+
+                // Render the first page of the ranking
+                renderRankings(sortedData, currentPage, rowsPerPage);
+                // Setup pagination buttons
+                setupPagination(sortedData);
+                // Render other sections
+                renderRecruiterRanking(sortedData);
+
+            } catch (error) {
+                console.error("Fehler beim Abrufen der Daten:", error);
+                document.getElementById('ranking-body').innerHTML = '<tr><td colspan="6" class="p-4 text-center text-red-400">Daten konnten nicht geladen werden.</td></tr>';
+            }
+        }
+
+        // Initialization
+        window.onload = () => {
+            updateTimeline();
+            fetchDataAndRender();
+            renderGraduates();
+        };
+    </script>
+</body>
+</html>
