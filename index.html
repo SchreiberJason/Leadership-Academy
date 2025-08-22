@@ -66,6 +66,26 @@
             border-radius: 9999px;
             transition: width 0.5s ease-in-out;
         }
+
+        /* Sort arrow styling */
+        .sort-arrow {
+            display: inline-block;
+            margin-left: 0.5rem;
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            vertical-align: middle;
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .sort-arrow.up {
+            border-bottom: 5px solid #1e293b; /* Upward pointing triangle */
+        }
+        
+        .sort-arrow.down {
+            border-top: 5px solid #1e293b; /* Downward pointing triangle */
+        }
     </style>
 </head>
 <body class="bg-light-bg text-slate-800 min-h-screen flex flex-col">
@@ -112,14 +132,14 @@
                 <table class="min-w-full text-left">
                     <thead class="table-header">
                         <tr>
-                            <th scope="col" class="py-4 px-6 text-base font-bold rounded-tl-xl">Platz</th>
-                            <th scope="col" class="py-4 px-6 text-base font-bold">Name</th>
-                            <th scope="col" class="py-4 px-6 text-base font-bold text-center">ETs Gesamt</th>
-                            <th scope="col" class="py-4 px-6 text-base font-bold text-center">Ziel</th>
-                            <th scope="col" class="py-4 px-6 text-base font-bold text-center">Gesamtziel</th>
-                            <!-- New column for weekly ETs -->
-                            <th scope="col" class="py-4 px-6 text-base font-bold text-center">Wochen ETs</th>
-                            <th scope="col" class="py-4 px-6 text-base font-bold rounded-tr-xl">Challenge Fortschritt</th>
+                            <!-- Adding data-sort-by attributes and a placeholder for the arrow -->
+                            <th scope="col" class="py-4 px-6 text-base font-bold rounded-tl-xl cursor-pointer" data-sort-by="rank">Platz</th>
+                            <th scope="col" class="py-4 px-6 text-base font-bold cursor-pointer" data-sort-by="name">Name<span class="sort-arrow"></span></th>
+                            <th scope="col" class="py-4 px-6 text-base font-bold text-center cursor-pointer" data-sort-by="etsGesamt">ETs Gesamt<span class="sort-arrow"></span></th>
+                            <th scope="col" class="py-4 px-6 text-base font-bold text-center cursor-pointer" data-sort-by="meinZiel">Ziel<span class="sort-arrow"></span></th>
+                            <th scope="col" class="py-4 px-6 text-base font-bold text-center cursor-pointer" data-sort-by="meinGesamtziel">Gesamtziel<span class="sort-arrow"></span></th>
+                            <th scope="col" class="py-4 px-6 text-base font-bold text-center cursor-pointer" data-sort-by="weeklyEts">Wochen ETs<span class="sort-arrow"></span></th>
+                            <th scope="col" class="py-4 px-6 text-base font-bold rounded-tr-xl cursor-pointer" data-sort-by="progressPercentage">Challenge Fortschritt<span class="sort-arrow"></span></th>
                         </tr>
                     </thead>
                     <tbody id="ranking-body">
@@ -182,10 +202,13 @@
             'Übung macht den Meister'
         ];
         
-        // Global variables for pagination
+        // Global variables for pagination and sorting
         let currentPage = 1;
         const rowsPerPage = 10;
-        let sortedData = []; // Store the sorted data globally to use with pagination
+        let data = []; // Store the full dataset globally
+        let sortedData = []; // Store the currently sorted data
+        let currentSortColumn = 'etsGesamt'; // Default sort column
+        let sortDirection = 'desc'; // Default sort direction
 
         // Google Sheet URL (needs to be handled by a backend proxy in a real-world scenario)
         const googleSheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQMuGKX0YGZNK5oVt7nJBtyGjCXXC288WC6uIRwZGb7WOdcWqVdo-WzwJai5rJYRx-11u19C4fF-j0u/pub?gid=923736018&single=true&output=csv';
@@ -481,6 +504,79 @@
             return currentWeek;
         }
 
+        /**
+         * Updates the UI to show the correct sorting arrow.
+         * @param {string} column - The column being sorted.
+         * @param {string} direction - The sort direction ('asc' or 'desc').
+         */
+        function updateSortArrows(column, direction) {
+            document.querySelectorAll('.sort-arrow').forEach(arrow => {
+                arrow.classList.remove('up', 'down');
+            });
+            const header = document.querySelector(`[data-sort-by="${column}"] .sort-arrow`);
+            if (header) {
+                if (direction === 'asc') {
+                    header.classList.add('up');
+                } else {
+                    header.classList.add('down');
+                }
+            }
+        }
+
+        /**
+         * Sorts the data based on a given column and toggles the sort direction.
+         * @param {string} column - The data key to sort by.
+         */
+        function sortData(column) {
+            // Check if the rank column is clicked, which is not sortable.
+            if (column === 'rank') {
+                return;
+            }
+
+            // If the same column is clicked, reverse the direction
+            if (currentSortColumn === column) {
+                sortDirection = (sortDirection === 'asc') ? 'desc' : 'asc';
+            } else {
+                // Otherwise, set the new column and default to descending sort
+                currentSortColumn = column;
+                sortDirection = 'desc';
+            }
+
+            // Perform the sort
+            sortedData.sort((a, b) => {
+                let aVal = a[column];
+                let bVal = b[column];
+
+                // Handle string and number sorting
+                if (typeof aVal === 'string' && typeof bVal === 'string') {
+                    return sortDirection === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+                } else {
+                    return sortDirection === 'asc' ? aVal - bVal : bVal - aVal;
+                }
+            });
+
+            // Update the UI with the correct arrows
+            updateSortArrows(currentSortColumn, sortDirection);
+
+            // Reset to the first page and re-render
+            currentPage = 1;
+            renderRankings(sortedData, currentPage, rowsPerPage);
+            setupPagination(sortedData);
+        }
+
+        /**
+         * Initializes event listeners for the table headers to enable sorting.
+         */
+        function setupSorting() {
+            const tableHeader = document.querySelector('thead');
+            tableHeader.addEventListener('click', (event) => {
+                const columnHeader = event.target.closest('[data-sort-by]');
+                if (columnHeader) {
+                    const sortBy = columnHeader.getAttribute('data-sort-by');
+                    sortData(sortBy);
+                }
+            });
+        }
 
         // Function to fetch and process data
         async function fetchDataAndRender() {
@@ -497,11 +593,12 @@
 
                 // Log raw and parsed data for debugging purposes
                 console.log("Raw CSV Text:", csvText);
-                sortedData = parseCSV(csvText, weeklyEtsIndex); // Store data in the global variable
+                data = parseCSV(csvText, weeklyEtsIndex); // Store full data
+                sortedData = [...data]; // Create a copy for sorting
                 console.log("Parsed Data:", sortedData);
                 
-                // Sort the data by 'etsGesamt' in descending order
-                sortedData.sort((a, b) => b.etsGesamt - a.etsGesamt);
+                // Sort the data by 'etsGesamt' in descending order by default
+                sortData('etsGesamt');
 
                 // Render the first page of the ranking
                 renderRankings(sortedData, currentPage, rowsPerPage);
@@ -521,6 +618,7 @@
             updateTimeline();
             fetchDataAndRender();
             renderGraduates();
+            setupSorting(); // Initialize sorting functionality
         };
     </script>
 </body>
