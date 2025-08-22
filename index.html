@@ -90,21 +90,28 @@
 </head>
 <body class="bg-light-bg text-slate-800 min-h-screen flex flex-col">
 
-    <!-- Header Section (without blue background) -->
-    <header class="bg-white py-8 md:py-12 text-center">
-        <div class="container mx-auto px-4">
-            <!-- Bild-Bereich (Hier kann ein <img> Tag oder eine Hintergrundgrafik eingefügt werden) -->
-            <div class="mb-4">
-                <img src="Banner.png"Platzhalter für Header-Bild" class="w-full h-auto rounded-xl">
-            </div>
-            <div class="text-primary-blue">
-                <h1 class="text-4xl md:text-6xl font-extrabold leading-tight">
-                    Leadership Academy 🚀
-                </h1>
-                <p class="text-xl md:text-2xl font-light mt-2 opacity-90">
-                    Die Zukunft der Führung
-                </p>
-            </div>
+    <!-- Header Section with blurred background and increased size -->
+    <header class="relative overflow-hidden py-24 text-center">
+        <!-- Blurred Background Image Container -->
+        <div class="absolute inset-0 z-0" style="
+            background-image: url('Banner.png'); 
+            background-size: cover; 
+            background-position: center; 
+            filter: blur(3px);
+        "></div>
+        
+        <!-- Semi-transparent overlay for better text readability -->
+        <div class="absolute inset-0 z-10 bg-black bg-opacity-30"></div>
+        
+        <!-- Header Content (Text) -->
+        <div class="relative z-20 container mx-auto px-4">
+            <!-- Text on top -->
+            <h1 class="text-white text-4xl md:text-6xl font-extrabold leading-tight">
+                Leadership Academy
+            </h1>
+            <p class="text-white text-xl md:text-2xl font-light mt-2 opacity-90">
+                Die Zukunft der Führung
+            </p>
         </div>
     </header>
 
@@ -112,8 +119,9 @@
     <main class="w-full p-4 md:p-8 flex-grow">
 
         <!-- Timetable Section -->
-        <section class="mt-8 mb-12">
-            <h2 class="text-3xl font-bold mb-8 text-center">Dein Weg zum Leader</h2>
+        <section class="my-16 container mx-auto px-4 max-w-7xl">
+            <!-- Heading is now left-aligned -->
+            <h2 class="text-3xl font-bold mb-8 text-left">Dein Weg zum Leader</h2>
             <div class="bg-card-bg rounded-2xl p-6 md:p-10 shadow-xl overflow-hidden">
                 <div id="timeline-milestones" class="timeline-container relative">
                     <!-- Milestones will be dynamically added here -->
@@ -462,7 +470,7 @@
             if (view === 'weekly') {
                 sortedRecruiters = [...data].sort((a, b) => b.weeklyEts - a.weeklyEts).slice(0, 3);
                 valueKey = 'weeklyEts';
-                titleText = 'Bester Recruiter Woche ⭐';
+                titleText = 'Bester Recruiter ⭐'; // Changed title as requested
             } else { // overall
                 sortedRecruiters = [...data].sort((a, b) => b.etsGesamt - a.etsGesamt).slice(0, 3);
                 valueKey = 'etsGesamt';
