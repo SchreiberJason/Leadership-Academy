@@ -133,13 +133,42 @@
                     <thead class="table-header">
                         <tr>
                             <!-- Adding data-sort-by attributes and a placeholder for the arrow -->
-                            <th scope="col" class="py-4 px-6 text-base font-bold rounded-tl-xl cursor-pointer" data-sort-by="rank">Platz</th>
-                            <th scope="col" class="py-4 px-6 text-base font-bold cursor-pointer" data-sort-by="name">Name<span class="sort-arrow"></span></th>
-                            <th scope="col" class="py-4 px-6 text-base font-bold text-center cursor-pointer" data-sort-by="etsGesamt">ETs Gesamt<span class="sort-arrow"></span></th>
-                            <th scope="col" class="py-4 px-6 text-base font-bold text-center cursor-pointer" data-sort-by="meinZiel">Ziel<span class="sort-arrow"></span></th>
-                            <th scope="col" class="py-4 px-6 text-base font-bold text-center cursor-pointer" data-sort-by="meinGesamtziel">Gesamtziel<span class="sort-arrow"></span></th>
-                            <th scope="col" class="py-4 px-6 text-base font-bold text-center cursor-pointer" data-sort-by="weeklyEts">Wochen ETs<span class="sort-arrow"></span></th>
-                            <th scope="col" class="py-4 px-6 text-base font-bold rounded-tr-xl cursor-pointer" data-sort-by="progressPercentage">Challenge Fortschritt<span class="sort-arrow"></span></th>
+                            <!-- Using flexbox to ensure the arrow stays next to the text and adding whitespace-nowrap -->
+                            <th scope="col" class="py-4 px-6 text-base font-bold cursor-pointer whitespace-nowrap" data-sort-by="rank">
+                                <div class="flex items-center gap-2">
+                                    Platz
+                                </div>
+                            </th>
+                            <th scope="col" class="py-4 px-6 text-base font-bold cursor-pointer whitespace-nowrap" data-sort-by="name">
+                                <div class="flex items-center gap-2">
+                                    Name<span class="sort-arrow"></span>
+                                </div>
+                            </th>
+                            <th scope="col" class="py-4 px-6 text-base font-bold text-center cursor-pointer whitespace-nowrap" data-sort-by="etsGesamt">
+                                <div class="flex items-center gap-2">
+                                    ETs Gesamt<span class="sort-arrow"></span>
+                                </div>
+                            </th>
+                            <th scope="col" class="py-4 px-6 text-base font-bold text-center cursor-pointer whitespace-nowrap" data-sort-by="meinZiel">
+                                <div class="flex items-center gap-2">
+                                    Ziel<span class="sort-arrow"></span>
+                                </div>
+                            </th>
+                            <th scope="col" class="py-4 px-6 text-base font-bold text-center cursor-pointer whitespace-nowrap" data-sort-by="meinGesamtziel">
+                                <div class="flex items-center gap-2">
+                                    Gesamtziel<span class="sort-arrow"></span>
+                                </div>
+                            </th>
+                            <th scope="col" class="py-4 px-6 text-base font-bold text-center cursor-pointer whitespace-nowrap" data-sort-by="weeklyEts">
+                                <div class="flex items-center gap-2">
+                                    Wochen ETs<span class="sort-arrow"></span>
+                                </div>
+                            </th>
+                            <th scope="col" class="py-4 px-6 text-base font-bold cursor-pointer whitespace-nowrap" data-sort-by="progressPercentage">
+                                <div class="flex items-center gap-2">
+                                    Challenge Fortschritt<span class="sort-arrow"></span>
+                                </div>
+                            </th>
                         </tr>
                     </thead>
                     <tbody id="ranking-body">
@@ -159,20 +188,28 @@
                 </button>
             </div>
         </section>
+
+        <!-- Best Recruiter Section (Gesamt) -->
+        <section class="my-16 container mx-auto px-4 max-w-7xl">
+            <h2 class="text-3xl font-bold mb-6 text-left">Bester Recruiter insgesamt 🥇</h2>
+            <div id="best-recruiter-container" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Top 3 overall recruiters will be dynamically added here -->
+            </div>
+        </section>
         
         <!-- Recruiter Ranking Section -->
         <section class="my-16 container mx-auto px-4 max-w-7xl">
-            <h2 class="text-3xl font-bold mb-6 text-left">Beste Recruiter ⭐</h2>
+            <h2 class="text-3xl font-bold mb-6 text-left">Wochen Beste Recruiter ⭐</h2>
             <div id="recruiter-ranking-container" class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <!-- Top 3 Recruiter cards will be dynamically added here -->
             </div>
         </section>
 
-        <!-- Leadership Academy Graduates Section -->
+        <!-- Challenge Winners Section - New Styling -->
         <section class="my-16 container mx-auto px-4 max-w-7xl">
-            <h2 class="text-3xl font-bold mb-6 text-left">Unsere Absolventen 🎓</h2>
-            <div id="graduates-list" class="flex flex-wrap gap-3">
-                <!-- Graduate badges will be dynamically added here -->
+            <h2 class="text-3xl font-bold mb-6 text-left">Unsere Challenge-Helden! 🔥</h2>
+            <div id="challenge-winners-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Winner cards will be dynamically added here -->
             </div>
         </section>
 
@@ -206,8 +243,8 @@
         let currentPage = 1;
         const rowsPerPage = 10;
         let data = []; // Store the full dataset globally
-        let sortedData = []; // Store the currently sorted data
-        let currentSortColumn = 'etsGesamt'; // Default sort column
+        let sortedData = []; // Store the currently sorted data for the main ranking table
+        let currentSortColumn = 'etsGesamt'; // Default sort column for the main ranking table
         let sortDirection = 'desc'; // Default sort direction
 
         // Google Sheet URL (needs to be handled by a backend proxy in a real-world scenario)
@@ -282,6 +319,7 @@
                 // Get 'Challenge Fortschritt' value and parse it
                 let challengeFortschritt = (challengeFortschrittIndex !== -1 && row[challengeFortschrittIndex]) ? row[challengeFortschrittIndex].trim() : '0 von 0';
                 let progressPercentage = 0;
+                let completedChallenges = 0;
                 const progressMatch = challengeFortschritt.match(/(\d+)\s+von\s+(\d+)/);
                 if (progressMatch) {
                     const numerator = parseInt(progressMatch[1], 10);
@@ -289,10 +327,12 @@
                     if (denominator > 0) {
                         progressPercentage = (numerator / denominator) * 100;
                     }
+                    completedChallenges = numerator;
                 } else if (challengeFortschritt.includes('von 0 möglichen')) {
                     // Handle "0 von 0 möglichen" case explicitly
                     challengeFortschritt = '0 von 0';
                     progressPercentage = 0;
+                    completedChallenges = 0;
                 }
 
 
@@ -307,7 +347,8 @@
                         meinGesamtziel: isNaN(meinGesamtziel) ? 0 : meinGesamtziel, // Ensure it's a number
                         weeklyEts: isNaN(weeklyEts) ? 0 : weeklyEts, // Ensure it's a number
                         challengeFortschritt: challengeFortschritt,
-                        progressPercentage: progressPercentage
+                        progressPercentage: progressPercentage,
+                        completedChallenges: completedChallenges
                     });
                 }
             }
@@ -391,8 +432,41 @@
         }
 
         /**
-         * Renders the top 3 recruiters in a card-based layout.
-         * @param {Array<Object>} data - The processed data sorted by recruiting efforts.
+         * Renders the top 3 recruiters based on total ETs.
+         * @param {Array<Object>} data - The processed data sorted by total ETs.
+         */
+        function renderBestRecruiters(data) {
+            const container = document.getElementById('best-recruiter-container');
+            container.innerHTML = '';
+            
+            // Sort data by total ETs in descending order
+            const topRecruiters = [...data].sort((a, b) => b.etsGesamt - a.etsGesamt).slice(0, 3);
+            
+            if (topRecruiters.length === 0) {
+                 container.innerHTML = '<div class="col-span-3 text-center text-gray-500">Keine Recruiter-Daten verfügbar.</div>';
+                 return;
+            }
+
+            topRecruiters.forEach((recruiter, index) => {
+                const medalEmoji = index === 0 ? '🏆' : index === 1 ? '🥈' : '🥉';
+                
+                const card = `
+                    <div class="bg-card-bg rounded-xl p-6 text-center shadow-lg transform transition-transform duration-300 hover:scale-105 border-t-4 border-primary-blue">
+                        <div class="text-4xl mb-2">${medalEmoji}</div>
+                        <h4 class="text-xl font-bold text-slate-800">${recruiter.name}</h4>
+                        <p class="text-sm text-gray-500 mt-2">
+                            Gesamte ETs ausgemacht
+                        </p>
+                        <p class="text-3xl font-bold text-primary-blue mb-2">${recruiter.etsGesamt}</p>
+                    </div>
+                `;
+                container.innerHTML += card;
+            });
+        }
+
+        /**
+         * Renders the top 3 recruiters in a card-based layout with new styling.
+         * @param {Array<Object>} data - The processed data sorted by weekly ETs.
          */
         function renderRecruiterRanking(data) {
             const container = document.getElementById('recruiter-ranking-container');
@@ -406,32 +480,75 @@
 
             topRecruiters.forEach((recruiter, index) => {
                 const medalEmoji = index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉';
+                
+                let goalStatusHtml = '';
+                if (recruiter.weeklyEts >= recruiter.meinZiel && recruiter.meinZiel > 0) {
+                    goalStatusHtml = `<p class="text-sm font-semibold text-green-500 mt-2">Ziel erreicht! ✅</p>`;
+                } else if (recruiter.meinZiel > 0) {
+                    // Changed text to "Ziel noch nicht erreicht" and color to a more yellowish tone
+                    goalStatusHtml = `<p class="text-sm font-semibold text-yellow-500 mt-2">Ziel noch nicht erreicht ⏳</p>`;
+                } else {
+                    goalStatusHtml = `<p class="text-sm font-semibold text-gray-400 mt-2">Kein Wochenziel gesetzt 🎯</p>`;
+                }
+
                 const card = `
                     <div class="bg-card-bg rounded-xl p-6 text-center shadow-lg transform transition-transform duration-300 hover:scale-105 border-t-4 border-accent-teal">
                         <div class="text-4xl mb-2">${medalEmoji}</div>
                         <h4 class="text-xl font-bold text-slate-800">${recruiter.name}</h4>
+                        <p class="text-sm text-gray-500 mt-2">
+                            ETs in dieser Woche ausgemacht
+                        </p>
+                        <p class="text-3xl font-bold text-primary-blue mb-2">${recruiter.weeklyEts}</p>
+                        ${goalStatusHtml}
                     </div>
                 `;
                 container.innerHTML += card;
             });
         }
-
+        
         /**
-         * Renders the graduates as badges. This is a placeholder function.
+         * Renders a celebratory hall of fame for all who are currently "in the race".
+         * A participant is in the race if they have completed all challenges up to the current week.
+         * @param {Array<Object>} data - The full processed dataset.
          */
-        function renderGraduates() {
-            const graduatesList = document.getElementById('graduates-list');
-            graduatesList.innerHTML = '';
-            
-            const graduates = ['Jana Müller', 'Marco Fischer', 'Lena Schmidt']; // Beispiel-Absolventen
+        function renderChallengeWinners(data) {
+            const container = document.getElementById('challenge-winners-list');
+            container.innerHTML = ''; // Clear previous content
 
-            graduates.forEach(name => {
-                const badge = `
-                    <span class="bg-gray-100 text-gray-800 text-sm font-semibold px-4 py-2 rounded-full border border-gray-300">
-                        ${name}
-                    </span>
+            // Get the current week number to filter
+            const currentWeek = getCurrentWeek();
+
+            // Filter for individuals who have completed all challenges up to the current week
+            const heroes = data.filter(person => person.completedChallenges === currentWeek && currentWeek > 0);
+            
+            // Sort heroes alphabetically
+            heroes.sort((a, b) => a.name.localeCompare(b.name));
+
+            if (heroes.length === 0) {
+                // Display a motivational message if no one is in the race yet
+                container.innerHTML = `
+                    <div class="col-span-full text-center p-8 bg-gray-100 rounded-xl shadow-inner">
+                        <p class="text-lg font-semibold text-gray-600">
+                            Im Moment ist noch niemand im Rennen. Gib dein Bestes, um der Erste zu sein! 🏃‍♂️
+                        </p>
+                    </div>
                 `;
-                graduatesList.innerHTML += badge;
+                return;
+            }
+
+            // Create a card for each hero
+            heroes.forEach(hero => {
+                const heroCard = `
+                    <div class="bg-card-bg rounded-xl p-6 text-center shadow-xl border-t-4 border-accent-teal transform transition-transform duration-300 hover:scale-105">
+                        <div class="text-5xl mb-4">🚀</div>
+                        <h4 class="text-2xl font-bold text-slate-800">${hero.name}</h4>
+                        <p class="text-md text-gray-500 mt-2">
+                            ist weiterhin im Rennen!
+                        </p>
+                        <p class="text-lg font-bold text-primary-blue mt-2">${hero.challengeFortschritt} gemeistert!</p>
+                    </div>
+                `;
+                container.innerHTML += heroCard;
             });
         }
 
@@ -480,6 +597,9 @@
                         <h3 class="text-xl font-bold text-slate-800 mb-1">${m.week === 0 ? 'Start' : `Woche ${m.week}`}</h3>
                         ${theme ? `<p class="text-sm font-semibold text-accent-teal mb-2">${theme}</p>` : ''}
                         <p class="text-sm text-gray-500">${m.date.toLocaleDateString('de-DE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                        <a href="https://docs.google.com/forms/d/e/1FAIpQLSc-nopD_C8Ij6M9na7cJ9-obo1Y6PO3IrTWDfR7fisgT0lNiA/viewform" target="_blank" class="mt-3 inline-block text-sm text-primary-blue hover:text-blue-700 font-semibold transition-colors duration-200">
+                            Feedback geben →
+                        </a>
                     </div>
                 `;
                 timelineContainer.innerHTML += card;
@@ -539,9 +659,9 @@
             } else {
                 // Otherwise, set the new column and default to descending sort
                 currentSortColumn = column;
-                sortDirection = 'desc';
+                sortDirection = 'desc'; // Default to desc for new columns
             }
-
+            
             // Perform the sort
             sortedData.sort((a, b) => {
                 let aVal = a[column];
@@ -594,19 +714,34 @@
                 // Log raw and parsed data for debugging purposes
                 console.log("Raw CSV Text:", csvText);
                 data = parseCSV(csvText, weeklyEtsIndex); // Store full data
-                sortedData = [...data]; // Create a copy for sorting
-                console.log("Parsed Data:", sortedData);
                 
-                // Sort the data by 'etsGesamt' in descending order by default
-                sortData('etsGesamt');
+                sortedData = [...data]; // Create a copy for sorting the main table
+                
+                // Perform initial sort based on new default: 'etsGesamt' descending
+                sortedData.sort((a, b) => b.etsGesamt - a.etsGesamt);
+                
+                // Update the global sort state after the initial manual sort
+                currentSortColumn = 'etsGesamt';
+                sortDirection = 'desc';
+
+                // Sort the weekly recruiter data separately
+                let weeklyRecruiterData = [...data];
+                weeklyRecruiterData.sort((a, b) => b.weeklyEts - a.weeklyEts);
+                renderRecruiterRanking(weeklyRecruiterData);
+                
+                // Render the best recruiters overall section
+                renderBestRecruiters(data);
 
                 // Render the first page of the ranking
                 renderRankings(sortedData, currentPage, rowsPerPage);
                 // Setup pagination buttons
                 setupPagination(sortedData);
-                // Render other sections
-                renderRecruiterRanking(sortedData);
-
+                // Update sort arrows to reflect the initial sort
+                updateSortArrows(currentSortColumn, sortDirection);
+                
+                // Render the challenge winners section
+                renderChallengeWinners(data);
+                
             } catch (error) {
                 console.error("Fehler beim Abrufen der Daten:", error);
                 document.getElementById('ranking-body').innerHTML = '<tr><td colspan="7" class="p-4 text-center text-red-400">Daten konnten nicht geladen werden.</td></tr>';
@@ -617,7 +752,6 @@
         window.onload = () => {
             updateTimeline();
             fetchDataAndRender();
-            renderGraduates();
             setupSorting(); // Initialize sorting functionality
         };
     </script>
