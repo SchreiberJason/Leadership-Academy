@@ -90,15 +90,21 @@
 </head>
 <body class="bg-light-bg text-slate-800 min-h-screen flex flex-col">
 
-    <!-- Header Section -->
-    <header class="bg-primary-blue text-white py-16 md:py-24 text-center shadow-lg">
+    <!-- Header Section (without blue background) -->
+    <header class="bg-white py-8 md:py-12 text-center">
         <div class="container mx-auto px-4">
-            <h1 class="text-4xl md:text-6xl font-extrabold leading-tight">
-                Leadership Academy 🚀
-            </h1>
-            <p class="text-xl md:text-2xl font-light mt-2 opacity-90">
-                Die Zukunft der Führung
-            </p>
+            <!-- Bild-Bereich (Hier kann ein <img> Tag oder eine Hintergrundgrafik eingefügt werden) -->
+            <div class="mb-4">
+                <img src="Banner.png"Platzhalter für Header-Bild" class="w-full h-auto rounded-xl">
+            </div>
+            <div class="text-primary-blue">
+                <h1 class="text-4xl md:text-6xl font-extrabold leading-tight">
+                    Leadership Academy 🚀
+                </h1>
+                <p class="text-xl md:text-2xl font-light mt-2 opacity-90">
+                    Die Zukunft der Führung
+                </p>
+            </div>
         </div>
     </header>
 
@@ -189,23 +195,28 @@
             </div>
         </section>
 
-        <!-- Best Recruiter Section (Gesamt) -->
+        <!-- Dynamic Recruiter Ranking Section -->
         <section class="my-16 container mx-auto px-4 max-w-7xl">
-            <h2 class="text-3xl font-bold mb-6 text-left">Bester Recruiter insgesamt 🥇</h2>
-            <div id="best-recruiter-container" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Top 3 overall recruiters will be dynamically added here -->
+            <!-- Title and Toggle Buttons -->
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+                <h2 id="recruiter-ranking-title" class="text-3xl font-bold mb-4 sm:mb-0"></h2>
+                <div class="inline-flex rounded-full bg-gray-200 p-1">
+                    <button id="toggle-weekly" class="px-5 py-2 text-sm font-semibold rounded-full bg-white text-primary-blue shadow-md transition-colors duration-200">
+                        Woche
+                    </button>
+                    <button id="toggle-overall" class="px-5 py-2 text-sm font-semibold rounded-full text-gray-700 hover:text-primary-blue transition-colors duration-200">
+                        Gesamt
+                    </button>
+                </div>
             </div>
-        </section>
-        
-        <!-- Recruiter Ranking Section -->
-        <section class="my-16 container mx-auto px-4 max-w-7xl">
-            <h2 class="text-3xl font-bold mb-6 text-left">Wochen Beste Recruiter ⭐</h2>
+            
+            <!-- Recruiter Cards Container -->
             <div id="recruiter-ranking-container" class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <!-- Top 3 Recruiter cards will be dynamically added here -->
             </div>
         </section>
-
-        <!-- Challenge Winners Section - New Styling -->
+        
+        <!-- Challenge Winners Section -->
         <section class="my-16 container mx-auto px-4 max-w-7xl">
             <h2 class="text-3xl font-bold mb-6 text-left">Unsere Challenge-Helden! 🔥</h2>
             <div id="challenge-winners-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -246,6 +257,9 @@
         let sortedData = []; // Store the currently sorted data for the main ranking table
         let currentSortColumn = 'etsGesamt'; // Default sort column for the main ranking table
         let sortDirection = 'desc'; // Default sort direction
+
+        // State for the new dynamic recruiter section
+        let currentRecruiterView = 'weekly';
 
         // Google Sheet URL (needs to be handled by a backend proxy in a real-world scenario)
         const googleSheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQMuGKX0YGZNK5oVt7nJBtyGjCXXC288WC6uIRwZGb7WOdcWqVdo-WzwJai5rJYRx-11u19C4fF-j0u/pub?gid=923736018&single=true&output=csv';
@@ -432,32 +446,61 @@
         }
 
         /**
-         * Renders the top 3 recruiters based on total ETs.
-         * @param {Array<Object>} data - The processed data sorted by total ETs.
+         * Renders the top 3 recruiters based on the selected view (weekly or overall).
+         * @param {Array<Object>} data - The full processed data.
+         * @param {string} view - 'weekly' or 'overall'.
          */
-        function renderBestRecruiters(data) {
-            const container = document.getElementById('best-recruiter-container');
+        function renderTopRecruiters(data, view) {
+            const container = document.getElementById('recruiter-ranking-container');
+            const title = document.getElementById('recruiter-ranking-title');
             container.innerHTML = '';
-            
-            // Sort data by total ETs in descending order
-            const topRecruiters = [...data].sort((a, b) => b.etsGesamt - a.etsGesamt).slice(0, 3);
-            
-            if (topRecruiters.length === 0) {
+
+            let sortedRecruiters = [];
+            let valueKey = '';
+            let titleText = '';
+
+            if (view === 'weekly') {
+                sortedRecruiters = [...data].sort((a, b) => b.weeklyEts - a.weeklyEts).slice(0, 3);
+                valueKey = 'weeklyEts';
+                titleText = 'Bester Recruiter Woche ⭐';
+            } else { // overall
+                sortedRecruiters = [...data].sort((a, b) => b.etsGesamt - a.etsGesamt).slice(0, 3);
+                valueKey = 'etsGesamt';
+                titleText = 'Bester Recruiter 🏆';
+            }
+
+            title.textContent = titleText;
+
+            if (sortedRecruiters.length === 0) {
                  container.innerHTML = '<div class="col-span-3 text-center text-gray-500">Keine Recruiter-Daten verfügbar.</div>';
                  return;
             }
 
-            topRecruiters.forEach((recruiter, index) => {
-                const medalEmoji = index === 0 ? '🏆' : index === 1 ? '🥈' : '🥉';
+            sortedRecruiters.forEach((recruiter, index) => {
+                const medalEmoji = index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉';
+                const valueText = valueKey === 'weeklyEts' ? recruiter.weeklyEts : recruiter.etsGesamt;
+                const valueDescription = valueKey === 'weeklyEts' ? 'ETs in dieser Woche ausgemacht' : 'Gesamte ETs ausgemacht';
                 
+                let goalStatusHtml = '';
+                if (view === 'weekly') {
+                    if (recruiter.weeklyEts >= recruiter.meinZiel && recruiter.meinZiel > 0) {
+                        goalStatusHtml = `<p class="text-sm font-semibold text-green-500 mt-2">Ziel erreicht! ✅</p>`;
+                    } else if (recruiter.meinZiel > 0) {
+                        goalStatusHtml = `<p class="text-sm font-semibold text-yellow-500 mt-2">Ziel noch nicht erreicht ⏳</p>`;
+                    } else {
+                        goalStatusHtml = `<p class="text-sm font-semibold text-gray-400 mt-2">Kein Wochenziel gesetzt 🎯</p>`;
+                    }
+                }
+
                 const card = `
-                    <div class="bg-card-bg rounded-xl p-6 text-center shadow-lg transform transition-transform duration-300 hover:scale-105 border-t-4 border-primary-blue">
+                    <div class="bg-card-bg rounded-xl p-6 text-center shadow-lg transform transition-transform duration-300 hover:scale-105 border-t-4 ${view === 'weekly' ? 'border-accent-teal' : 'border-primary-blue'}">
                         <div class="text-4xl mb-2">${medalEmoji}</div>
                         <h4 class="text-xl font-bold text-slate-800">${recruiter.name}</h4>
                         <p class="text-sm text-gray-500 mt-2">
-                            Gesamte ETs ausgemacht
+                            ${valueDescription}
                         </p>
-                        <p class="text-3xl font-bold text-primary-blue mb-2">${recruiter.etsGesamt}</p>
+                        <p class="text-3xl font-bold text-primary-blue mb-2">${valueText}</p>
+                        ${goalStatusHtml}
                     </div>
                 `;
                 container.innerHTML += card;
@@ -465,45 +508,27 @@
         }
 
         /**
-         * Renders the top 3 recruiters in a card-based layout with new styling.
-         * @param {Array<Object>} data - The processed data sorted by weekly ETs.
+         * Toggles the active state of the view buttons.
+         * @param {string} viewType - 'weekly' or 'overall'.
          */
-        function renderRecruiterRanking(data) {
-            const container = document.getElementById('recruiter-ranking-container');
-            container.innerHTML = '';
-
-            const topRecruiters = data.slice(0, 3);
-            if (topRecruiters.length === 0) {
-                 container.innerHTML = '<div class="col-span-3 text-center text-gray-500">Keine Recruiter-Daten verfügbar.</div>';
-                 return;
+        function toggleRecruiterView(viewType) {
+            const weeklyBtn = document.getElementById('toggle-weekly');
+            const overallBtn = document.getElementById('toggle-overall');
+            
+            if (viewType === 'weekly') {
+                weeklyBtn.classList.add('bg-white', 'text-primary-blue', 'shadow-md');
+                weeklyBtn.classList.remove('text-gray-700', 'hover:text-primary-blue');
+                overallBtn.classList.remove('bg-white', 'text-primary-blue', 'shadow-md');
+                overallBtn.classList.add('text-gray-700', 'hover:text-primary-blue');
+            } else {
+                overallBtn.classList.add('bg-white', 'text-primary-blue', 'shadow-md');
+                overallBtn.classList.remove('text-gray-700', 'hover:text-primary-blue');
+                weeklyBtn.classList.remove('bg-white', 'text-primary-blue', 'shadow-md');
+                weeklyBtn.classList.add('text-gray-700', 'hover:text-primary-blue');
             }
 
-            topRecruiters.forEach((recruiter, index) => {
-                const medalEmoji = index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉';
-                
-                let goalStatusHtml = '';
-                if (recruiter.weeklyEts >= recruiter.meinZiel && recruiter.meinZiel > 0) {
-                    goalStatusHtml = `<p class="text-sm font-semibold text-green-500 mt-2">Ziel erreicht! ✅</p>`;
-                } else if (recruiter.meinZiel > 0) {
-                    // Changed text to "Ziel noch nicht erreicht" and color to a more yellowish tone
-                    goalStatusHtml = `<p class="text-sm font-semibold text-yellow-500 mt-2">Ziel noch nicht erreicht ⏳</p>`;
-                } else {
-                    goalStatusHtml = `<p class="text-sm font-semibold text-gray-400 mt-2">Kein Wochenziel gesetzt 🎯</p>`;
-                }
-
-                const card = `
-                    <div class="bg-card-bg rounded-xl p-6 text-center shadow-lg transform transition-transform duration-300 hover:scale-105 border-t-4 border-accent-teal">
-                        <div class="text-4xl mb-2">${medalEmoji}</div>
-                        <h4 class="text-xl font-bold text-slate-800">${recruiter.name}</h4>
-                        <p class="text-sm text-gray-500 mt-2">
-                            ETs in dieser Woche ausgemacht
-                        </p>
-                        <p class="text-3xl font-bold text-primary-blue mb-2">${recruiter.weeklyEts}</p>
-                        ${goalStatusHtml}
-                    </div>
-                `;
-                container.innerHTML += card;
-            });
+            currentRecruiterView = viewType;
+            renderTopRecruiters(data, currentRecruiterView);
         }
         
         /**
@@ -724,13 +749,8 @@
                 currentSortColumn = 'etsGesamt';
                 sortDirection = 'desc';
 
-                // Sort the weekly recruiter data separately
-                let weeklyRecruiterData = [...data];
-                weeklyRecruiterData.sort((a, b) => b.weeklyEts - a.weeklyEts);
-                renderRecruiterRanking(weeklyRecruiterData);
-                
-                // Render the best recruiters overall section
-                renderBestRecruiters(data);
+                // Initial render of the new dynamic recruiter section
+                toggleRecruiterView('weekly'); // Default view is weekly
 
                 // Render the first page of the ranking
                 renderRankings(sortedData, currentPage, rowsPerPage);
@@ -747,12 +767,25 @@
                 document.getElementById('ranking-body').innerHTML = '<tr><td colspan="7" class="p-4 text-center text-red-400">Daten konnten nicht geladen werden.</td></tr>';
             }
         }
+        
+        /**
+         * Sets up event listeners for the new view toggle buttons.
+         */
+        function setupRecruiterToggle() {
+            document.getElementById('toggle-weekly').addEventListener('click', () => {
+                toggleRecruiterView('weekly');
+            });
+            document.getElementById('toggle-overall').addEventListener('click', () => {
+                toggleRecruiterView('overall');
+            });
+        }
 
         // Initialization
         window.onload = () => {
             updateTimeline();
             fetchDataAndRender();
             setupSorting(); // Initialize sorting functionality
+            setupRecruiterToggle(); // Initialize the new toggle functionality
         };
     </script>
 </body>
