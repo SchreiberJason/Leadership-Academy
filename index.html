@@ -117,6 +117,8 @@
                             <th scope="col" class="py-4 px-6 text-base font-bold text-center">ETs Gesamt</th>
                             <th scope="col" class="py-4 px-6 text-base font-bold text-center">Ziel</th>
                             <th scope="col" class="py-4 px-6 text-base font-bold text-center">Gesamtziel</th>
+                            <!-- New column for weekly ETs -->
+                            <th scope="col" class="py-4 px-6 text-base font-bold text-center">Wochen ETs</th>
                             <th scope="col" class="py-4 px-6 text-base font-bold rounded-tr-xl">Challenge Fortschritt</th>
                         </tr>
                     </thead>
@@ -164,8 +166,21 @@
     <script>
         // Start date of the program
         const startDate = new Date('2025-08-23T00:00:00');
-        // Corrected total weeks from 8 to 7
-        const totalWeeks = 7;
+        // Total number of weeks in the program
+        const totalWeeks = 6;
+        
+        // Define the theme for the start of the program
+        const startTheme = 'Recruiter Einstellung';
+
+        // Define the themes for each week
+        const weeklyThemes = [
+            'Auftreten & Begeistern',
+            'Closing & Sympathie im Verkauf',
+            'Der perfekte ET',
+            'Potential & Netzwerken',
+            'Mitarbeiterführung',
+            'Übung macht den Meister'
+        ];
         
         // Global variables for pagination
         let currentPage = 1;
@@ -179,9 +194,10 @@
          * Parses CSV text and extracts all required columns by searching for their headers.
          * It filters out non-personal names and limits the data to the first 44 rows.
          * @param {string} text The CSV content as a string.
+         * @param {number} weeklyEtsIndex The calculated index for the weekly ETs column.
          * @returns {Array<Object>} An array of objects with the processed data.
          */
-        function parseCSV(text) {
+        function parseCSV(text, weeklyEtsIndex) {
             const rows = text.trim().split('\n').map(row => row.split(','));
             
             let nameIndex = -1;
@@ -237,6 +253,9 @@
                 // Get 'Mein Gesamtziel' value
                 const meinGesamtziel = (meinGesamtzielIndex !== -1 && row[meinGesamtzielIndex]) ? parseInt(row[meinGesamtzielIndex].trim(), 10) : 0;
 
+                // Get 'Wochen ETs' value based on the calculated index
+                const weeklyEts = (weeklyEtsIndex !== -1 && row[weeklyEtsIndex]) ? parseInt(row[weeklyEtsIndex].trim(), 10) : 0;
+
                 // Get 'Challenge Fortschritt' value and parse it
                 let challengeFortschritt = (challengeFortschrittIndex !== -1 && row[challengeFortschrittIndex]) ? row[challengeFortschrittIndex].trim() : '0 von 0';
                 let progressPercentage = 0;
@@ -263,6 +282,7 @@
                         etsGesamt: isNaN(etsGesamt) ? 0 : etsGesamt, // Ensure it's a number
                         meinZiel: isNaN(meinZiel) ? 0 : meinZiel, // Ensure it's a number
                         meinGesamtziel: isNaN(meinGesamtziel) ? 0 : meinGesamtziel, // Ensure it's a number
+                        weeklyEts: isNaN(weeklyEts) ? 0 : weeklyEts, // Ensure it's a number
                         challengeFortschritt: challengeFortschritt,
                         progressPercentage: progressPercentage
                     });
@@ -282,7 +302,7 @@
             rankingBody.innerHTML = ''; // Clear previous content
 
             if (data.length === 0) {
-                rankingBody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-gray-500">Keine Ranking-Daten vorhanden.</td></tr>';
+                rankingBody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-gray-500">Keine Ranking-Daten vorhanden.</td></tr>';
                 return;
             }
 
@@ -302,6 +322,7 @@
                         <td class="py-4 px-6 font-medium text-gray-700 text-center">${item.etsGesamt}</td>
                         <td class="py-4 px-6 font-medium text-gray-700 text-center">${item.meinZiel}</td>
                         <td class="py-4 px-6 font-medium text-gray-700 text-center">${item.meinGesamtziel}</td>
+                        <td class="py-4 px-6 font-medium text-gray-700 text-center">${item.weeklyEts}</td>
                         <td class="py-4 px-6">
                             <div class="progress-bar-container">
                                 <div class="progress-bar-fill" style="width: ${item.progressPercentage}%;"></div>
@@ -417,6 +438,14 @@
             milestones.forEach(m => {
                 const statusEmoji = m.milestonePassed ? '✅' : '⏳';
                 const statusText = m.isCurrent ? 'Aktuell' : (m.milestonePassed ? 'Abgeschlossen' : 'Bevorstehend');
+                
+                let theme = '';
+                if (m.week === 0) {
+                    theme = startTheme;
+                } else if (m.week > 0 && m.week <= weeklyThemes.length) {
+                    theme = weeklyThemes[m.week - 1];
+                }
+
                 const card = `
                     <div class="timeline-milestone-card bg-card-bg">
                         <div class="flex items-center justify-between mb-2">
@@ -426,11 +455,30 @@
                             </span>
                         </div>
                         <h3 class="text-xl font-bold text-slate-800 mb-1">${m.week === 0 ? 'Start' : `Woche ${m.week}`}</h3>
+                        ${theme ? `<p class="text-sm font-semibold text-accent-teal mb-2">${theme}</p>` : ''}
                         <p class="text-sm text-gray-500">${m.date.toLocaleDateString('de-DE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
                     </div>
                 `;
                 timelineContainer.innerHTML += card;
             });
+        }
+        
+        /**
+         * Calculates the current week number based on the start date.
+         * @returns {number} The current week number (1-based).
+         */
+        function getCurrentWeek() {
+            const now = new Date();
+            const diffTime = Math.abs(now.getTime() - startDate.getTime());
+            // Convert time difference to days, then to weeks
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+            let currentWeek = Math.floor(diffDays / 7) + 1;
+
+            // Cap the week number to the total number of weeks
+            if (currentWeek > totalWeeks) {
+                currentWeek = totalWeeks;
+            }
+            return currentWeek;
         }
 
 
@@ -441,9 +489,15 @@
                 const response = await fetch(googleSheetUrl);
                 const csvText = await response.text();
 
+                // Calculate the correct column index for weekly ETs
+                const currentWeek = getCurrentWeek();
+                // 'W' is the 23rd letter, so its 0-based index is 22.
+                // Each week adds 3 columns to the index.
+                const weeklyEtsIndex = 22 + (currentWeek - 1) * 3;
+
                 // Log raw and parsed data for debugging purposes
                 console.log("Raw CSV Text:", csvText);
-                sortedData = parseCSV(csvText); // Store data in the global variable
+                sortedData = parseCSV(csvText, weeklyEtsIndex); // Store data in the global variable
                 console.log("Parsed Data:", sortedData);
                 
                 // Sort the data by 'etsGesamt' in descending order
@@ -458,7 +512,7 @@
 
             } catch (error) {
                 console.error("Fehler beim Abrufen der Daten:", error);
-                document.getElementById('ranking-body').innerHTML = '<tr><td colspan="6" class="p-4 text-center text-red-400">Daten konnten nicht geladen werden.</td></tr>';
+                document.getElementById('ranking-body').innerHTML = '<tr><td colspan="7" class="p-4 text-center text-red-400">Daten konnten nicht geladen werden.</td></tr>';
             }
         }
 
