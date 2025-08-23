@@ -266,6 +266,7 @@
         let sortedData = []; // Store the currently sorted data for the main ranking table
         let currentSortColumn = 'progressPercentage'; // Default sort column is now 'progressPercentage'
         let sortDirection = 'desc'; // Default sort direction
+        let currentRecruiterView = 'weekly'; // Set default view to 'weekly'
 
         // Google Sheet URL (needs to be handled by a backend proxy in a real-world scenario)
         const googleSheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQMuGKX0YGZNK5oVt7nJBtyGjCXXC288WC6uIRwZGb7WOdcWqVdo-WzwJai5rJYRx-11u19C4fF-j0u/pub?gid=923736018&single=true&output=csv';
@@ -722,6 +723,9 @@
             document.getElementById('toggle-overall').addEventListener('click', () => {
                 toggleRecruiterView('overall');
             });
+            
+            // Initial render based on the default view
+            toggleRecruiterView(currentRecruiterView);
         }
         
         // Function to fetch and process data
@@ -750,8 +754,8 @@
                 currentSortColumn = 'progressPercentage';
                 sortDirection = 'desc';
 
-                // Initial render of the new dynamic recruiter section
-                toggleRecruiterView('overall'); // Default view is now overall again
+                // Initial render of the new dynamic recruiter section based on the default view
+                renderTopRecruiters(data, currentRecruiterView);
 
                 // Render the first page of the ranking
                 renderRankings(sortedData, currentPage, rowsPerPage);
