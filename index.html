@@ -243,7 +243,7 @@
         // Start date of the program
         const startDate = new Date('2025-08-23T00:00:00');
         // Total number of weeks in the program
-        const totalWeeks = 6;
+        const totalWeeks = 7;
         
         // Define the theme for the start of the program
         const startTheme = 'Recruiter Einstellung';
@@ -255,7 +255,8 @@
             'Der perfekte ET',
             'Potential & Netzwerken',
             'Mitarbeiterführung',
-            'Übung macht den Meister'
+            'Übung macht den Meister',
+            'SIEGEREHRUNG'
         ];
         
         // Global variables for pagination and sorting
@@ -263,18 +264,15 @@
         const rowsPerPage = 10;
         let data = []; // Store the full dataset globally
         let sortedData = []; // Store the currently sorted data for the main ranking table
-        let currentSortColumn = 'etsGesamt'; // Default sort column for the main ranking table
+        let currentSortColumn = 'progressPercentage'; // Default sort column is now 'progressPercentage'
         let sortDirection = 'desc'; // Default sort direction
-
-        // State for the new dynamic recruiter section
-        let currentRecruiterView = 'weekly';
 
         // Google Sheet URL (needs to be handled by a backend proxy in a real-world scenario)
         const googleSheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQMuGKX0YGZNK5oVt7nJBtyGjCXXC288WC6uIRwZGb7WOdcWqVdo-WzwJai5rJYRx-11u19C4fF-j0u/pub?gid=923736018&single=true&output=csv';
 
         /**
          * Parses CSV text and extracts all required columns by searching for their headers.
-         * It filters out non-personal names and limits the data to the first 44 rows.
+         * It filters out non-personal names and the 'SUMME' row, and limits the data to the first 44 rows.
          * @param {string} text The CSV content as a string.
          * @param {number} weeklyEtsIndex The calculated index for the weekly ETs column.
          * @returns {Array<Object>} An array of objects with the processed data.
@@ -357,17 +355,14 @@
                     completedChallenges = 0;
                 }
 
-
-                // Filter out names that are not alphanumeric or are single characters,
-                // and explicitly exclude 'RDK' and 'BL'. This also handles the 'Name' header row
-                // because 'Name' has a length > 1, but is not a personal name.
-                if (name && name.length > 1 && /[a-zA-Z]/.test(name) && name.toUpperCase() !== 'RDK' && !name.includes('BL') && name.toLowerCase() !== 'name') {
+                // Filter out names that are not alphanumeric, single characters, or 'SUMME' etc.
+                if (name && name.length > 1 && /[a-zA-Z]/.test(name) && name.toUpperCase() !== 'RDK' && !name.includes('BL') && name.toLowerCase() !== 'name' && name.toUpperCase() !== 'SUMME') {
                     processedData.push({
                         name: name,
-                        etsGesamt: isNaN(etsGesamt) ? 0 : etsGesamt, // Ensure it's a number
-                        meinZiel: isNaN(meinZiel) ? 0 : meinZiel, // Ensure it's a number
-                        meinGesamtziel: isNaN(meinGesamtziel) ? 0 : meinGesamtziel, // Ensure it's a number
-                        weeklyEts: isNaN(weeklyEts) ? 0 : weeklyEts, // Ensure it's a number
+                        etsGesamt: isNaN(etsGesamt) ? 0 : etsGesamt,
+                        meinZiel: isNaN(meinZiel) ? 0 : meinZiel,
+                        meinGesamtziel: isNaN(meinGesamtziel) ? 0 : meinGesamtziel,
+                        weeklyEts: isNaN(weeklyEts) ? 0 : weeklyEts,
                         challengeFortschritt: challengeFortschritt,
                         progressPercentage: progressPercentage,
                         completedChallenges: completedChallenges
@@ -388,6 +383,7 @@
             rankingBody.innerHTML = ''; // Clear previous content
 
             if (data.length === 0) {
+                // Update colspan to 7
                 rankingBody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-gray-500">Keine Ranking-Daten vorhanden.</td></tr>';
                 return;
             }
@@ -465,19 +461,16 @@
 
             let sortedRecruiters = [];
             let valueKey = '';
-            let titleText = '';
 
             if (view === 'weekly') {
                 sortedRecruiters = [...data].sort((a, b) => b.weeklyEts - a.weeklyEts).slice(0, 3);
                 valueKey = 'weeklyEts';
-                titleText = 'Bester Recruiter ⭐'; // Changed title as requested
             } else { // overall
                 sortedRecruiters = [...data].sort((a, b) => b.etsGesamt - a.etsGesamt).slice(0, 3);
                 valueKey = 'etsGesamt';
-                titleText = 'Bester Recruiter 🏆';
             }
 
-            title.textContent = titleText;
+            title.textContent = 'Bester Recruiter 🏆';
 
             if (sortedRecruiters.length === 0) {
                  container.innerHTML = '<div class="col-span-3 text-center text-gray-500">Keine Recruiter-Daten verfügbar.</div>';
@@ -489,17 +482,6 @@
                 const valueText = valueKey === 'weeklyEts' ? recruiter.weeklyEts : recruiter.etsGesamt;
                 const valueDescription = valueKey === 'weeklyEts' ? 'ETs in dieser Woche ausgemacht' : 'Gesamte ETs ausgemacht';
                 
-                let goalStatusHtml = '';
-                if (view === 'weekly') {
-                    if (recruiter.weeklyEts >= recruiter.meinZiel && recruiter.meinZiel > 0) {
-                        goalStatusHtml = `<p class="text-sm font-semibold text-green-500 mt-2">Ziel erreicht! ✅</p>`;
-                    } else if (recruiter.meinZiel > 0) {
-                        goalStatusHtml = `<p class="text-sm font-semibold text-yellow-500 mt-2">Ziel noch nicht erreicht ⏳</p>`;
-                    } else {
-                        goalStatusHtml = `<p class="text-sm font-semibold text-gray-400 mt-2">Kein Wochenziel gesetzt 🎯</p>`;
-                    }
-                }
-
                 const card = `
                     <div class="bg-card-bg rounded-xl p-6 text-center shadow-lg transform transition-transform duration-300 hover:scale-105 border-t-4 ${view === 'weekly' ? 'border-accent-teal' : 'border-primary-blue'}">
                         <div class="text-4xl mb-2">${medalEmoji}</div>
@@ -508,7 +490,6 @@
                             ${valueDescription}
                         </p>
                         <p class="text-3xl font-bold text-primary-blue mb-2">${valueText}</p>
-                        ${goalStatusHtml}
                     </div>
                 `;
                 container.innerHTML += card;
@@ -538,7 +519,7 @@
             currentRecruiterView = viewType;
             renderTopRecruiters(data, currentRecruiterView);
         }
-        
+
         /**
          * Renders a celebratory hall of fame for all who are currently "in the race".
          * A participant is in the race if they have completed all challenges up to the current week.
@@ -562,7 +543,7 @@
                 container.innerHTML = `
                     <div class="col-span-full text-center p-8 bg-gray-100 rounded-xl shadow-inner">
                         <p class="text-lg font-semibold text-gray-600">
-                            Im Moment ist noch niemand im Rennen. Gib dein Bestes, um der Erste zu sein! 🏃‍♂️
+                             Hier erscheinst du, sobald du dein selbst gestecktes Ziel erreicht hast!
                         </p>
                     </div>
                 `;
@@ -731,6 +712,18 @@
             });
         }
 
+        /**
+         * Sets up event listeners for the new view toggle buttons.
+         */
+        function setupRecruiterToggle() {
+            document.getElementById('toggle-weekly').addEventListener('click', () => {
+                toggleRecruiterView('weekly');
+            });
+            document.getElementById('toggle-overall').addEventListener('click', () => {
+                toggleRecruiterView('overall');
+            });
+        }
+        
         // Function to fetch and process data
         async function fetchDataAndRender() {
             try {
@@ -750,15 +743,15 @@
                 
                 sortedData = [...data]; // Create a copy for sorting the main table
                 
-                // Perform initial sort based on new default: 'etsGesamt' descending
-                sortedData.sort((a, b) => b.etsGesamt - a.etsGesamt);
+                // Perform initial sort based on new default: 'progressPercentage' descending
+                sortedData.sort((a, b) => b.progressPercentage - a.progressPercentage);
                 
                 // Update the global sort state after the initial manual sort
-                currentSortColumn = 'etsGesamt';
+                currentSortColumn = 'progressPercentage';
                 sortDirection = 'desc';
 
                 // Initial render of the new dynamic recruiter section
-                toggleRecruiterView('weekly'); // Default view is weekly
+                toggleRecruiterView('overall'); // Default view is now overall again
 
                 // Render the first page of the ranking
                 renderRankings(sortedData, currentPage, rowsPerPage);
@@ -776,19 +769,7 @@
             }
         }
         
-        /**
-         * Sets up event listeners for the new view toggle buttons.
-         */
-        function setupRecruiterToggle() {
-            document.getElementById('toggle-weekly').addEventListener('click', () => {
-                toggleRecruiterView('weekly');
-            });
-            document.getElementById('toggle-overall').addEventListener('click', () => {
-                toggleRecruiterView('overall');
-            });
-        }
-
-        // Initialization
+        // --- Initialization ---
         window.onload = () => {
             updateTimeline();
             fetchDataAndRender();
